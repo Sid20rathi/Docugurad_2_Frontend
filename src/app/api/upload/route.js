@@ -12,12 +12,11 @@ export async function POST(request) {
     const loanId = formData.get('loanId');
     const documentType = formData.get('documentType');
 
-    // --- 1. Validation ---
+    
     if (!file || !loanId || !documentType) {
       return NextResponse.json({ message: 'Missing required fields.' }, { status: 400 });
     }
 
-    // --- 2. Security: Whitelist document types ---
     const allowedColumns = ['modt', 'noi_data_entry_page', 'noi_receipt', 'noi_index2'];
     if (!allowedColumns.includes(documentType)) {
       return NextResponse.json({ message: 'Invalid document type.' }, { status: 400 });
@@ -27,7 +26,7 @@ export async function POST(request) {
     const buffer = Buffer.from(await file.arrayBuffer());
     const filename = `${Date.now()}-${file.name.replaceAll(' ', '_')}`;
 
-    // Upload file to Vercel Blob
+    
     const { url } = await put(filename, buffer, {
       access: 'public', // 👈 makes file accessible via URL
     });

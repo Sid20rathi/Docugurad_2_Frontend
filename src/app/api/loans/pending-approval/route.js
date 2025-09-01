@@ -27,7 +27,6 @@ export async function GET(request) {
       FROM 
         loan_master
       WHERE
-        status = 'upload completed' AND
         (modt_approval_status = 'pending' OR noi_index2_approval_status = 'pending')
       ORDER BY 
         created_at ASC;

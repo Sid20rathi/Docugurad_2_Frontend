@@ -1,11 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect ,useRef} from 'react';
 import { useRouter } from 'next/navigation';
-import { ShieldCheck, ShieldAlert, ShieldQuestion, FileScan, ArrowLeft, Download, Image as ImageIcon } from 'lucide-react';
-// Assuming these are custom components you have in your project structure
-// If not, you might need to replace them with standard elements or install a library like shadcn/ui
-// For this example, we'll assume they exist at the specified path.
+import { ShieldCheck, ShieldAlert, ShieldQuestion, FileScan, ArrowLeft, Download, Image as ImageIcon, LogOut } from 'lucide-react';
+
 import {
   Navbar,
   NavBody,
@@ -21,35 +19,64 @@ import GradientText from '@/components/ui/gradient_text';
 import { jsPDF } from 'jspdf';
 
 export default function ResultPage() {
+  const [isAdmin, setIsAdmin] = useState("");
+  const [email, setEmail] = useState("");
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [userName, setUserName] = useState("");
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const profileRef = useRef(null);
 
-  // --- Mock Sign Out Function ---
-  // Replace with your actual authentication logic if needed
-  const handleSignOut = () => {
-    console.log("Signing out...");
-    router.push('/signin'); // Redirect to a sign-in page
+  const handleSignOut = async () => {
+    try {
+      localStorage.removeItem("user_email");
+      localStorage.removeItem("user_type");
+      localStorage.removeItem("user_name");
+      
+
+      
+      const response = await fetch('/api/auth/signout', {
+        method: 'POST',
+      });
+
+      if (response.ok) {
+        
+        router.push('/signin');
+      } else {
+        
+        console.error('Sign-out failed');
+      }
+    } catch (error) {
+      console.error('An error occurred during sign-out:', error);
+    }
   };
 
-  // --- Navigation Items (if any) ---
+
   const navItems = [];
 
   useEffect(() => {
     try {
-      // Fetches the analysis result stored in the browser's local storage
+      const storedEmail = localStorage.getItem("user_email");
+      const storedIsAdmin = localStorage.getItem("user_type");
+      const storedUserName = localStorage.getItem("user_name");
+
+      setEmail(storedEmail);
+      setIsAdmin(true);
+      setUserName(storedUserName || "admin");
+ 
       const savedResult = localStorage.getItem('ai_output');
       if (savedResult) {
         setResult(JSON.parse(savedResult));
       } else {
-        // If no result is found, redirect to the main page
+      
         console.warn("No result found in localStorage, redirecting.");
-        router.push('/');
+        //router.push('/');
       }
     } catch (error) {
       console.error("Failed to parse results from localStorage", error);
-      router.push('/');
+      router.push('/dashboard');
     } finally {
       setLoading(false);
     }
@@ -65,7 +92,7 @@ export default function ResultPage() {
     
     const pairs = [];
     result.page_by_page_analysis.forEach(pageAnalysis => {
-      // Check if a visual analysis with both an original and a diff image exists for the page
+   
       if (pageAnalysis.visual_analysis?.diff_image_url && pageAnalysis.visual_analysis?.original_image_url) {
         pairs.push({
           page: pageAnalysis.page,
@@ -93,9 +120,7 @@ export default function ResultPage() {
     }
   }
 
-  /**
-   * Generates a summary of the analysis report as a downloadable PDF file.
-   */
+ 
   const downloadReportAsPDF = () => {
     if (!result) return;
     const pdf = new jsPDF();
@@ -104,7 +129,7 @@ export default function ResultPage() {
     const margin = 15;
     const pageWidth = pdf.internal.pageSize.getWidth();
   
-    // Helper function to add text and manage vertical offset
+  
     const addText = (text, options = {}) => {
         pdf.setFontSize(options.size || 12);
         pdf.setFont(undefined, options.bold ? 'bold' : 'normal');
@@ -113,7 +138,7 @@ export default function ResultPage() {
         yOffset += (splitText.length * lineHeight) + (options.spacing || 0);
     };
     
-    // Add content to the PDF
+    
     addText('Forensic Document Analysis Report', { size: 18, bold: true, spacing: 10 });
     const verdictInfo = getVerdictDetails(result.verdict);
     addText(`Verdict: ${verdictInfo.text}`, { size: 14, bold: true, spacing: 7 });
@@ -137,11 +162,11 @@ export default function ResultPage() {
     pdf.save(`Forensic_Report_${new Date().toISOString().split('T')[0]}.pdf`);
   };
 
-  // Memoize derived state to prevent re-calculation on every render
+
   const verdictDetails = React.useMemo(() => getVerdictDetails(result?.verdict), [result]);
   const imagePairs = React.useMemo(() => getEvidenceImagePairs(), [result]);
 
-  // --- Loading State ---
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50 text-gray-800">
@@ -159,10 +184,10 @@ export default function ResultPage() {
   if (!result) { 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 text-gray-800">
-            <ShieldQuestion className="h-16 w-16 text-yellow-500 mb-4" />
+            <ShieldQuestion className="h-16 w-16 text-indigo-500 mb-4" />
             <h1 className="text-2xl font-bold mb-2">No Analysis Data Found</h1>
             <p className="text-gray-600 mb-6">The analysis result could not be loaded.</p>
-            <button onClick={() => router.push('/dashboard')} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg px-4 py-2 transition-all shadow-md hover:shadow-lg">
+            <button onClick={() => router.push('/dashboard')} className="flex items-center gap-2 bg-blue-600 hover:bg-pink-700 text-white font-semibold rounded-lg px-4 py-2 transition-all shadow-md hover:shadow-lg">
               <ArrowLeft className="h-4 w-4" />
               <span>Return to Dashboard</span>
             </button>
@@ -170,17 +195,38 @@ export default function ResultPage() {
     );
   }
 
-  // --- Main Component Render ---
+
   return (
     <div>
     <div className="shadow-xs">
-        <Navbar className="bg-yellow-200">
+        <Navbar className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
             <NavBody>
                 <NavbarLogo />
                 <NavItems items={navItems} />
-                <div className="flex items-center gap-4">
-                    <NavbarButton variant="primary" onClick={handleSignOut}>Sign Out</NavbarButton>
-                </div>
+                <div className="relative" ref={profileRef}>
+                <button
+                  onClick={() => setIsProfileOpen(!isProfileOpen)}
+                  className="flex items-center justify-center w-10 h-10 bg-black text-white rounded-full font-bold text-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-pink-500 focus:ring-white"
+                >
+                  {userName.charAt(0).toUpperCase()}
+                </button>
+                {isProfileOpen && (
+                  <div className="absolute right-0 mt-2 w-64 bg-white rounded-md shadow-lg py-1 z-50 dark:bg-gray-800 border dark:border-gray-700">
+                    <div className="px-4 py-2 border-b dark:border-gray-600">
+                      <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{userName}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{email}</p>
+                    </div>
+                    <button
+                      onClick={handleSignOut}
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 flex items-center gap-2"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Sign Out
+                    </button>
+                  </div>
+                )}
+              </div>
+               
             </NavBody>
             <MobileNav>
                 <MobileNavHeader>

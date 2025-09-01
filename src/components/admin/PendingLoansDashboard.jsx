@@ -71,7 +71,7 @@ export function PendingLoansDashboard() {
 
   const handleVerificationRedirect = (loanId, loanAccountNumber, fileType, filePath) => {
     if (!filePath) {
-      toast.error('File path is not available for this document.');
+      toast.error('File is not uploaded yet. Please upload the file first.');
       return;
     }
     const pathname = `/verification/dashboard/${loanId}`;
@@ -148,7 +148,7 @@ export function PendingLoansDashboard() {
                       </div>
                     </div>
                   )}
-                  {loan.noi_index2_approval_status === 'pending' && (
+                  {loan.noi_index2_approval_status === 'pending' &&  (
                     <div className="flex items-center justify-between gap-2">
                       <span className="font-semibold text-sm">NOI Index II :</span>
                       <div className="flex gap-2">

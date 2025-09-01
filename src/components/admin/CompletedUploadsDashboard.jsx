@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { Input } from '@/components/ui/input';
-import { Search } from 'lucide-react';
+import { Badge, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const StatusBadge = ({ status }) => {
@@ -14,6 +14,7 @@ const StatusBadge = ({ status }) => {
     pending: 'bg-yellow-100 text-yellow-800',
     approved: 'bg-green-100 text-green-800',
     rejected: 'bg-red-100 text-red-800',
+    missing : 'bg-red-100 text-red-800'
   };
 
   return (
@@ -35,7 +36,7 @@ export function CompletedUploadsDashboard() {
     const fetchCompletedLoans = async () => {
       setLoading(true);
       try {
-        const response = await fetch('/api/loans?status=upload%20completed');
+        const response = await fetch('/api/loans');
         if (!response.ok) {
           throw new Error('Failed to fetch loan data');
         }
@@ -133,14 +134,14 @@ export function CompletedUploadsDashboard() {
                   {loan.modt ? (
                      <a href={loan.modt} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-900 hover:underline">View MODT</a>
                   ) : (
-                    <span>N/A</span>
+                    <StatusBadge status="missing" />
                   )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                    {loan.noi_index2 ? (
                      <a href={loan.noi_index2} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-900 hover:underline">View NOI Index 2</a>
                   ) : (
-                    <span>N/A</span>
+                    <StatusBadge status="missing" />
                   )}
                 </td>
               </tr>

@@ -105,6 +105,25 @@ export default function AdminPage() {
                   </NavbarButton>
                 </>
               )}
+
+
+
+               {/*{isAdmin &&(
+                <>
+                  <NavbarButton 
+                    variant={activeView === 'pending' ? 'primary' : 'secondary'} 
+                    onClick={() => router.push('/dashboard')}
+                  
+                  >
+                    Document comparsion
+                  </NavbarButton>
+                </>
+              )}  */}
+
+
+
+
+              
             
               {isAdmin && (
                 <Dialog>

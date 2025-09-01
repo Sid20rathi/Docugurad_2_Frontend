@@ -20,9 +20,9 @@ export function FileUploadForm({ userEmail, onUploadSuccess }) {
     }
   };
 
-  // 1. This function ONLY allows numbers to be set in the state.
+
   const handleLoanNumberChange = (e) => {
-    // This regex removes any character that is not a digit (0-9).
+  
     const numericValue = e.target.value.replace(/[^0-9]/g, '');
     setLoanAccountNumber(numericValue);
   };

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState ,useRef} from "react";
 import { FileUpload } from "@/components/ui/file-upload";
 import { FlipWords } from "@/components/ui/flip-words";
 
@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import axios from "axios"
 import { LinearGradient } from 'react-text-gradients'
 import toast, { Toaster } from 'react-hot-toast';
-import { ShieldCheck, ShieldAlert, ShieldQuestion, FileScan, ArrowLeft } from 'lucide-react';
+import { ShieldCheck, ShieldAlert, ShieldQuestion, FileScan, ArrowLeft, LogOut } from 'lucide-react';
 
  
 
@@ -36,6 +36,9 @@ export default function Dashboard() {
   const words = ["Forgery", "Tampering", "Cloning", "Manipulation", "Fake", "Copy", "Counterfeit"];
   const [isAdmin, setIsAdmin] = useState("");
   const [email, setEmail] = useState("");
+  const [userName, setUserName] = useState("");
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const profileRef = useRef(null);
   
   
   const [originalFile, setOriginalFile] = useState(null);
@@ -45,21 +48,35 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
+
+
+
   useEffect(() => {
     const storedEmail = localStorage.getItem("user_email");
     const storedIsAdmin = localStorage.getItem("user_type");
+    const storedUserName = localStorage.getItem("user_name");
 
-    if (!storedEmail) {
-      
+    if (!storedEmail || storedIsAdmin !== 'admin') {
+      toast.error("Access Denied. Redirecting to sign-in.");
       router.push("/signin");
       return;
     }
 
     setEmail(storedEmail);
-    setIsAdmin(storedIsAdmin);
-    setLoading(false);
-   
+    setIsAdmin(true);
+    setUserName(storedUserName || "admin");
+
+    const handleClickOutside = (event) => {
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
+        setIsProfileOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, [router]);
+
 
   const handleFileUpload = (fileList, type) => {
     const file = fileList[0];
@@ -100,7 +117,7 @@ export default function Dashboard() {
 
 
       
-      const response = await axios.post("http://localhost:8000/api/verify/MODT", formData, {
+      const response = await axios.post("http://localhost:8000/api/verify", formData, {
         headers: { "Content-Type": "multipart/form-data" }
       });
       
@@ -137,6 +154,11 @@ export default function Dashboard() {
 
    const handleSignOut = async () => {
     try {
+      localStorage.removeItem("user_email");
+      localStorage.removeItem("user_type");
+      localStorage.removeItem("user_name");
+      
+
       
       const response = await fetch('/api/auth/signout', {
         method: 'POST',
@@ -165,7 +187,7 @@ export default function Dashboard() {
           <span className="loading loading-spinner loading-xl text-warning"></span>
           <FileScan className="animate-pulse h-8 w-8 " />
           <p className="text-3xl font-serif"> <GradientText
-            colors={["#000000", "#FBBF24", "#FCD34D", "#FBBF24", "#000000"]}
+            colors={["#000000", ["#6366F1", "#A855F7", "#EC4899"], "#000000"]}
             animationSpeed={90}
             showBorder={false}>
                 Analyzing Results...  
@@ -180,24 +202,60 @@ export default function Dashboard() {
     <div>
       
         <div className=" shadow-xs">
-            <Navbar className="bg-yellow-200">
+            <Navbar className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
        
         <NavBody>
           <NavbarLogo />
           <NavItems items={navItems} />
           <div className="flex items-center gap-4">
-            <NavbarButton variant="primary" onClick={handleSignOut}>Sign Out</NavbarButton>
-            {isAdmin =='admin' && (
+          {isAdmin &&(
+                <>
+                  <NavbarButton 
+                    
+                    onClick={() => router.push('/verification')}
+                  
+                  >
+                    Verify Documents
+                  </NavbarButton>
+                </>
+              )}
+            
+           
+              {isAdmin  && (
                 <Dialog>
                   <DialogTrigger asChild>
-                    <NavbarButton variant="primary">Admin</NavbarButton>
+                    <NavbarButton variant="primary">Admin Panel</NavbarButton>
                   </DialogTrigger>
-                  <DialogContent className="sm:max-w-[425px]">
+                  <DialogContent className="sm:max-w-[800px]">
                     <AdminPanel />
                   </DialogContent>
                 </Dialog>
               )}
-            
+
+<div className="relative" ref={profileRef}>
+                <button
+                  onClick={() => setIsProfileOpen(!isProfileOpen)}
+                  className="flex items-center justify-center w-10 h-10 bg-black text-white rounded-full font-bold text-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-pink-500 focus:ring-white"
+                >
+                  {userName.charAt(0).toUpperCase()}
+                </button>
+                {isProfileOpen && (
+                  <div className="absolute right-0 mt-2 w-64 bg-white rounded-md shadow-lg py-1 z-50 dark:bg-gray-800 border dark:border-gray-700">
+                    <div className="px-4 py-2 border-b dark:border-gray-600">
+                      <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{userName}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{email}</p>
+                    </div>
+                    <button
+                      onClick={handleSignOut}
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 flex items-center gap-2"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Sign Out
+                    </button>
+                  </div>
+                )}
+              </div>
+
             
           </div>
         </NavBody>
@@ -249,7 +307,7 @@ export default function Dashboard() {
            
             <div  className="flex justify-center text-8xl font-serif">
                  <GradientText
-            colors={["#000000", "#FBBF24", "#FCD34D", "#FBBF24", "#000000"]}
+            colors={["#000000", ["#6366F1", "#A855F7", "#EC4899"], "#000000"]}
             animationSpeed={9}
             showBorder={false}>
               
@@ -266,7 +324,7 @@ export default function Dashboard() {
 
             </div>
           <span className="text-4xl font-serif pt-16 flex justify-center">
-             For Document <FlipWords words={words} duration={500} className="text-yellow-600" /> Detector
+             For Document <FlipWords words={words} duration={500} className="text-indigo-500" /> Detector
           </span>
           <div className="flex justify-center mt-3 text-neutral-500 font-serif underline">
             Upload an original and a suspected document to check for tampering.

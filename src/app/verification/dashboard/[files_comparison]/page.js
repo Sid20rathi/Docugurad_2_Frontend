@@ -267,7 +267,7 @@ export default function AdminPage() {
       </div>
       <div className="mt-10">
         <div className="text-center text-black mb-4">
-            <p className="text-2xl font-serif"><strong>Loan Acc No:</strong>{<span className="text-3xl ml-5 font-bold">{loanAccountNumber}</span> || "N/A"}</p>
+            <p className="text-2xl font-serif"><strong>Loan Acc No:</strong>{<span className="text-3xl ml-3 font-sans">{loanAccountNumber}</span> || "N/A"}</p>
             <p className="text-xl font-serif mt-3"><strong>Document Type:</strong>{<span className="text-2xl ml-5 font-bold">{fileType}</span> || "N/A"}</p>
         </div>
       </div>

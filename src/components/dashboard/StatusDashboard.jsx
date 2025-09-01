@@ -22,12 +22,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import toast, { Toaster } from 'react-hot-toast';
 
-
 const ViewFileLink = ({ filePath, label = "View File" }) => {
   if (!filePath) {
     return <Badge variant="destructive">Missing</Badge>;
   }
-
 
   const fileUrl = `${filePath}`;
 
@@ -37,7 +35,6 @@ const ViewFileLink = ({ filePath, label = "View File" }) => {
       target="_blank"
       rel="noopener noreferrer"
       className="text-blue-600 hover:underline hover:text-blue-800 transition-colors"
-      // Stop propagation to prevent the row's onClick from firing when the link is clicked
       onClick={(e) => e.stopPropagation()}
     >
       {label}
@@ -51,7 +48,8 @@ export function StatusDashboard() {
   const [error, setError] = useState(null);
   const [selectedLoan, setSelectedLoan] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [file, setFile] = useState(null);
+  // MODIFIED: State now holds an object of files, keyed by document type
+  const [files, setFiles] = useState({});
 
   const fetchPendingLoans = async () => {
     const userEmail = localStorage.getItem("user_email");
@@ -78,14 +76,25 @@ export function StatusDashboard() {
     fetchPendingLoans();
   }, []);
 
+  // NEW: Handler to update the state for a specific file input
+  const handleFileChange = (documentType, selectedFile) => {
+    setFiles(prevFiles => ({
+      ...prevFiles,
+      [documentType]: selectedFile
+    }));
+  };
+
   const handleFileUpload = async (loanId, documentType) => {
-    if (!file) {
+    // MODIFIED: Get the specific file for the document type from the 'files' state
+    const fileToUpload = files[documentType];
+    
+    if (!fileToUpload) {
       toast.error("Please select a file first.");
       return;
     }
 
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append("file", fileToUpload);
     formData.append("loanId", loanId);
     formData.append("documentType", documentType);
 
@@ -95,11 +104,12 @@ export function StatusDashboard() {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       toast.success("File uploaded successfully!", { id: toastId });
+      
+      // MODIFIED: Close modal and refetch the list to show updated status
       setIsModalOpen(false);
       setSelectedLoan(null);
       fetchPendingLoans(); 
-    } catch (error)
-    {
+    } catch (error) {
       console.error("File upload failed:", error);
       toast.error("File upload failed. Please try again.");
     }
@@ -107,9 +117,11 @@ export function StatusDashboard() {
 
   const handleRowClick = (loan) => {
     setSelectedLoan(loan);
+    // NEW: Clear any lingering files from previous modal openings
+    setFiles({});
     setIsModalOpen(true);
   };
-
+  
   if (loading) {
     return (
       <div className="rounded-md border p-4">
@@ -161,7 +173,7 @@ export function StatusDashboard() {
                   <TableCell>
                     <Badge variant="destructive">{loan.status.toUpperCase()}</Badge>
                   </TableCell>
-                  {/* --- MODIFIED: Use the ViewFileLink component --- */}
+                  
                   <TableCell><ViewFileLink filePath={loan.modt} /></TableCell>
                   <TableCell><ViewFileLink filePath={loan.noi_data_entry_page} /></TableCell>
                   <TableCell><ViewFileLink filePath={loan.noi_receipt} /></TableCell>
@@ -189,7 +201,7 @@ export function StatusDashboard() {
           </DialogHeader>
           {selectedLoan && (
             <div className="space-y-4 mt-4">
-              {/* --- MODIFIED: Modal sections now show link or upload input --- */}
+              {/* --- MODIFIED: Modal sections now use separate file states --- */}
               <div className="flex items-center justify-between p-3 border rounded-md">
                 <div>
                   <p className="font-bold">MODT Document</p>
@@ -201,8 +213,8 @@ export function StatusDashboard() {
                 </div>
                 {!selectedLoan.modt && (
                   <div className="flex items-center gap-2">
-                    <Input type="file" onChange={(e) => setFile(e.target.files[0])} className="w-48" />
-                    <Button onClick={() => handleFileUpload(selectedLoan.id, 'modt')}>Upload</Button>
+                    <Input type="file" onChange={(e) => handleFileChange('modt', e.target.files?.[0])} className="w-48" />
+                    <Button onClick={() => handleFileUpload(selectedLoan.id, 'modt')} disabled={!files.modt}>Upload</Button>
                   </div>
                 )}
               </div>
@@ -218,8 +230,8 @@ export function StatusDashboard() {
                 </div>
                 {!selectedLoan.noi_data_entry_page && (
                   <div className="flex items-center gap-2">
-                    <Input type="file" onChange={(e) => setFile(e.target.files[0])} className="w-48" />
-                    <Button onClick={() => handleFileUpload(selectedLoan.id, 'noi_data_entry_page')}>Upload</Button>
+                    <Input type="file" onChange={(e) => handleFileChange('noi_data_entry_page', e.target.files?.[0])} className="w-48" />
+                    <Button onClick={() => handleFileUpload(selectedLoan.id, 'noi_data_entry_page')} disabled={!files.noi_data_entry_page}>Upload</Button>
                   </div>
                 )}
               </div>
@@ -235,8 +247,8 @@ export function StatusDashboard() {
                 </div>
                 {!selectedLoan.noi_receipt && (
                   <div className="flex items-center gap-2">
-                    <Input type="file" onChange={(e) => setFile(e.target.files[0])} className="w-48" />
-                    <Button onClick={() => handleFileUpload(selectedLoan.id, 'noi_receipt')}>Upload</Button>
+                    <Input type="file" onChange={(e) => handleFileChange('noi_receipt', e.target.files?.[0])} className="w-48" />
+                    <Button onClick={() => handleFileUpload(selectedLoan.id, 'noi_receipt')} disabled={!files.noi_receipt}>Upload</Button>
                   </div>
                 )}
               </div>
@@ -252,8 +264,8 @@ export function StatusDashboard() {
                 </div>
                 {!selectedLoan.noi_index2 && (
                   <div className="flex items-center gap-2">
-                    <Input type="file" onChange={(e) => setFile(e.target.files[0])} className="w-48" />
-                    <Button onClick={() => handleFileUpload(selectedLoan.id, 'noi_index2')}>Upload</Button>
+                    <Input type="file" onChange={(e) => handleFileChange('noi_index2', e.target.files?.[0])} className="w-48" />
+                    <Button onClick={() => handleFileUpload(selectedLoan.id, 'noi_index2')} disabled={!files.noi_index2}>Upload</Button>
                   </div>
                 )}
               </div>

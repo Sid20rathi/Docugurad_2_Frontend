@@ -8,10 +8,7 @@ export const SignOutModal = ({ isOpen, onClose, userName, email, onConfirm }) =>
   }
 
   return (
-    // --- UPDATED OVERLAY STYLING ---
-    // The classes below create the semi-transparent, blurred background.
-    // To use a white background instead, replace the className with:
-    // className="fixed inset-0 z-50 flex items-center justify-center bg-white bg-opacity-75"
+   
     <div
       className="fixed inset-0 z-50 flex items-center justify-center shadow-2xl"
       onClick={onClose}

@@ -16,15 +16,20 @@ import {
 } from "@/components/ui/resizable-navbar";
 import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { FileUploadForm } from "../forms/FileUploadForm";
+import { SignOutModal } from "../modals/SignOutModal";
 
 export function Agent_page() {
   const [isAdmin, setIsAdmin] = useState("");
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const [userName, setUserName] = useState("");
+  
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isnewModalOpen, setIsnewModalOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  
 
   const handleUploadComplete = useCallback(() => {
     setIsModalOpen(false);
@@ -34,11 +39,13 @@ export function Agent_page() {
   useEffect(() => {
     const storedEmail = localStorage.getItem("user_email");
     const storedIsAdmin = localStorage.getItem("user_type");
+    const storedUserName = localStorage.getItem("user_name");
 
     if (!storedEmail) {
       router.push("/signin");
       return;
     }
+    setUserName(storedUserName);
 
     setEmail(storedEmail);
     setIsAdmin(storedIsAdmin);
@@ -100,7 +107,11 @@ export function Agent_page() {
                     <FileUploadForm userEmail={email} onUploadSuccess={handleUploadComplete} /> 
                   </DialogContent>
                 </Dialog>
+                
               )}
+              <NavbarButton variant="primary" onClick={() => setIsnewModalOpen(true)}>
+                Profile
+              </NavbarButton>
             
             </div>
           </NavBody>
@@ -144,6 +155,23 @@ export function Agent_page() {
       <main className="container mx-auto p-8 w-full md:p-8">
         <StatusDashboard key={refreshKey} />
       </main>
+
+      <SignOutModal
+        isOpen={isnewModalOpen}
+        onClose={() => setIsnewModalOpen(false)}
+        onConfirm={handleSignOut}
+        userName={userName}
+        email={email}
+      />
+
+
+
+      
     </div>
+
+    
+
+
+
   );
 }

@@ -19,7 +19,7 @@ import { SignOutModal } from "@/components/modals/SignOutModal";
 export default function Uploaded() {
   const [isAdmin, setIsAdmin] = useState("");
   const [email, setEmail] = useState("");
-  // --- NEW: State for user's name and modal visibility ---
+ 
   const [userName, setUserName] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -28,7 +28,7 @@ export default function Uploaded() {
   useEffect(() => {
     const storedEmail = localStorage.getItem("user_email");
     const storedIsAdmin = localStorage.getItem("user_type");
-    // --- NEW: Get the user's name from localStorage ---
+  
     const storedUserName = localStorage.getItem("user_name");
 
     if (!storedEmail) {
@@ -38,7 +38,7 @@ export default function Uploaded() {
 
     setEmail(storedEmail);
     setIsAdmin(storedIsAdmin);
-    // --- NEW: Set the user's name, with a fallback ---
+   
     setUserName(storedUserName || "User");
     setLoading(false);
   }, [router]);
@@ -89,7 +89,7 @@ export default function Uploaded() {
                 <NavbarButton variant="primary" onClick={move_to_pending}>Pending Files</NavbarButton>
               )}
              
-              {/* --- UPDATED: This button now opens the modal --- */}
+            
               <NavbarButton variant="primary" onClick={() => setIsModalOpen(true)}>
                 Profile
               </NavbarButton>
@@ -141,7 +141,7 @@ export default function Uploaded() {
         <AllLoansDashboard />
       </main>
 
-      {/* --- NEW: Render the SignOutModal component --- */}
+      
       <SignOutModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

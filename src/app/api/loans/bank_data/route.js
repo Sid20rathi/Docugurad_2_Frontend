@@ -34,6 +34,7 @@ export async function GET() {
         status,
         modt_approval_status,
         noi_index2_approval_status,
+        title_document_status,
         user_id
       FROM 
         loan_master 

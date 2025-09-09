@@ -19,14 +19,14 @@ import {
   NavbarLogo,
 } from "@/components/ui/resizable-navbar";
 
-// A new component for the statistics cards
+
 const StatCard = ({ title, value, icon, color }) => (
-  <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md flex items-center space-x-4">
+  <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md  flex items-center space-x-4">
     <div className={`p-3 rounded-full ${color}`}>
       {icon}
     </div>
     <div>
-      <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</p>
+      <p className="text-sm font-medium text-gray-500  dark:text-gray-400">{title}</p>
       <p className="text-2xl font-bold text-gray-900 dark:text-white">{value}</p>
     </div>
   </div>
@@ -114,6 +114,9 @@ export default function Managerpages() {
     const totalNoiIndexApproved = loans.filter(loan => loan.noi_index2_approval_status === 'approved').length;
     const totalNoiIndexRejected = loans.filter(loan => loan.noi_index2_approval_status === 'rejected').length;
     const totalNoiIndexPending = loans.filter(loan => loan.noi_index2_approval_status === 'pending').length;
+    const totalTitleApproved = loans.filter(loan => loan.title_document_status === 'approved').length;
+    const totalTitleRejected = loans.filter(loan => loan.title_document_status === 'rejected').length;
+    const totalTitlePending = loans.filter(loan => loan.title_document_status === 'pending').length;
     
     return { 
       totalUploaded, 
@@ -122,7 +125,10 @@ export default function Managerpages() {
       totalModtPending,
       totalNoiIndexApproved,
       totalNoiIndexRejected,
-      totalNoiIndexPending
+      totalNoiIndexPending,
+      totalTitleApproved, 
+      totalTitleRejected, 
+      totalTitlePending,
     };
   }, [loans]);
 
@@ -230,15 +236,21 @@ export default function Managerpages() {
           <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Loan Management Dashboard</h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1">Review all loan applications.</p>
         </header>
+        <div className ="my-5 ">
+        <StatCard title="Total Uploaded" value={loanStats.totalUploaded} icon={<Upload className="h-6 w-6 text-blue-500 flex justify-center " />} color="bg-blue-100"  />
+        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <StatCard title="Total Uploaded" value={loanStats.totalUploaded} icon={<Upload className="h-6 w-6 text-blue-500" />} color="bg-blue-100" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          
           <StatCard title="MODT Approved" value={loanStats.totalModtApproved} icon={<CheckCircle className="h-6 w-6 text-green-500" />} color="bg-green-100" />
           <StatCard title="MODT Rejected" value={loanStats.totalModtRejected} icon={<XCircle className="h-6 w-6 text-red-500" />} color="bg-red-100" />
           <StatCard title="MODT Pending" value={loanStats.totalModtPending} icon={<Clock className="h-6 w-6 text-yellow-500" />} color="bg-yellow-100" />
           <StatCard title="NOI Index Approved" value={loanStats.totalNoiIndexApproved} icon={<CheckCircle className="h-6 w-6 text-green-500" />} color="bg-green-100" />
           <StatCard title="NOI Index Rejected" value={loanStats.totalNoiIndexRejected} icon={<XCircle className="h-6 w-6 text-red-500" />} color="bg-red-100" />
           <StatCard title="NOI Index Pending" value={loanStats.totalNoiIndexPending} icon={<Clock className="h-6 w-6 text-yellow-500" />} color="bg-yellow-100" />
+          <StatCard title="Title Approval" value={loanStats.totalTitleApproved} icon={<CheckCircle className="h-6 w-6 text-green-500" />} color="bg-green-100" />
+          <StatCard title="Title Rejected" value={loanStats.totalTitleRejected} icon={<XCircle className="h-6 w-6 text-red-500" />} color="bg-red-100" />
+          <StatCard title="Title Pending" value={loanStats.totalTitlePending} icon={<Clock className="h-6 w-6 text-yellow-500" />} color="bg-yellow-100" />
         </div>
 
         <div className="relative mb-6">
@@ -259,6 +271,7 @@ export default function Managerpages() {
                 <TableHead>Loan Account Number</TableHead>
                 <TableHead>MODT Approval</TableHead>
                 <TableHead>NOI Index2 Approval</TableHead>
+                <TableHead>Title Approval</TableHead>
                 <TableHead>Date Created</TableHead>
               </TableRow>
             </TableHeader>
@@ -271,6 +284,7 @@ export default function Managerpages() {
                     <TableCell className="font-medium">{loan.loan_account_number}</TableCell>
                     <TableCell className="pl-5">{getStatusBadge(loan.modt_approval_status)}</TableCell>
                     <TableCell className="pl-5">{getStatusBadge(loan.noi_index2_approval_status)}</TableCell>
+                    <TableCell className="pl-5">{getStatusBadge(loan.title_document_status)}</TableCell>
                     <TableCell>{new Date(loan.created_at).toLocaleDateString()}</TableCell>
                   </TableRow>
                 ))

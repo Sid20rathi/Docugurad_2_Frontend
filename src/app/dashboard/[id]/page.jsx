@@ -1,35 +1,18 @@
 'use client';
 
-import React, { useEffect, useState ,useRef} from "react";
+import React, { useEffect, useState, useRef } from "react";
+// ... (all your other imports remain the same)
 import { FileUpload } from "@/components/ui/file-upload";
 import { FlipWords } from "@/components/ui/flip-words";
-
-import { useRouter } from "next/navigation";
+import { useRouter,useSearchParams } from "next/navigation";
 import axios from "axios"
 import { LinearGradient } from 'react-text-gradients'
 import toast, { Toaster } from 'react-hot-toast';
-import { ShieldCheck, ShieldAlert, ShieldQuestion, FileScan, ArrowLeft, LogOut } from 'lucide-react';
-
- 
-
-  import {
-  Navbar,
-  NavBody,
-  NavItems,
-  MobileNav,
-  NavbarLogo,
-  NavbarButton,
-  MobileNavHeader,
-  MobileNavToggle,
-  MobileNavMenu,
-} from "@/components/ui/resizable-navbar";
+import { FileScan, LogOut } from 'lucide-react';
+import { Navbar, NavBody, NavItems, MobileNav, NavbarLogo, NavbarButton, MobileNavHeader, MobileNavToggle, MobileNavMenu } from "@/components/ui/resizable-navbar";
 import GradientText from "@/components/ui/gradient_text";
-
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { AdminPanel } from "@/components/admin/AdminPanel";
-
-
-
 
 
 export default function Dashboard() {
@@ -39,19 +22,30 @@ export default function Dashboard() {
   const [userName, setUserName] = useState("");
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const profileRef = useRef(null);
-  
+  const [loanAccountNumber, setLoanAccountNumber] = useState("");
+  const [fileType, setFileType] = useState("");
   
   const [originalFile, setOriginalFile] = useState(null);
   const [suspectedFile, setSuspectedFile] = useState(null);
   const [originalPreview, setOriginalPreview] = useState(null);
   const [suspectedPreview, setSuspectedPreview] = useState(null);
   const [loading, setLoading] = useState(false);
+  
+  // NEW STATE: To store real-time logs from the backend
+  const [analysisLogs, setAnalysisLogs] = useState([]);
+
   const router = useRouter();
-
-
-
+  const searchParams = useSearchParams();
 
   useEffect(() => {
+    if (originalFile && suspectedFile) {
+      toast.success("Files are ready. You can check for tampering!");
+    }
+  }, [originalFile, suspectedFile]);
+
+  // --- No changes needed in your useEffect hooks ---
+  useEffect(() => {
+    // ... your existing code ...
     const storedEmail = localStorage.getItem("user_email");
     const storedIsAdmin = localStorage.getItem("user_type");
     const storedUserName = localStorage.getItem("user_name");
@@ -77,20 +71,25 @@ export default function Dashboard() {
     };
   }, [router]);
 
+  useEffect(() => {
+    // ... your existing code ...
+    const loanAccNum = searchParams.get("loanAccountNumber");
+    const fType = searchParams.get("fileType");
+    if (loanAccNum) setLoanAccountNumber(loanAccNum);
+    if (fType) setFileType(fType);
+  }, [searchParams]);
 
+  // --- No changes needed in handleFileUpload ---
   const handleFileUpload = (fileList, type) => {
+    // ... your existing code ...
     const file = fileList[0];
-
     if (!(file instanceof Blob)) {
       console.error("Invalid file:", file);
       return;
     }
-
     const reader = new FileReader();
-
     reader.onload = (e) => {
       const fileUrl = e.target.result;
-
       if (type === "original") {
         setOriginalFile(file);
         setOriginalPreview(fileUrl);
@@ -99,109 +98,142 @@ export default function Dashboard() {
         setSuspectedPreview(fileUrl);
       }
     };
-
     reader.readAsDataURL(file); 
   };
 
-
-    const handleCheck = async () => {
+  // --- MAJOR CHANGE: Updated handleCheck function ---
+  const handleCheck = async (loanAccountNumber) => {
     if (!originalFile || !suspectedFile) return;
 
     const formData = new FormData();
-    formData.append("original", originalFile);
-    formData.append("suspected", suspectedFile);
+    formData.append("originalFile", originalFile);
+    formData.append("suspectedFile", suspectedFile);
 
     try {
       setLoading(true);
-     
+      setAnalysisLogs(["Uploading documents to the server..."]);
 
-
-      
-      const response = await axios.post("http://localhost:8000/api/verify", formData, {
+      // 1. Kick off the analysis and get the task ID
+      const response = await axios.post("https://docugurad-2-backend-2.onrender.com/title_document/api/verify", formData, {
         headers: { "Content-Type": "multipart/form-data" }
       });
-      
 
+      const { task_id } = response.data;
+      if (!task_id) {
+          throw new Error("Failed to start analysis task on the server.");
+      }
+      setAnalysisLogs(prev => [...prev, `Task started with ID: ${task_id}`]);
+
+      // 2. Open an EventSource connection to stream logs
+      const eventSource = new EventSource(`https://docugurad-2-backend-2.onrender.com/title_document/api/stream/${task_id}`);
+
+      eventSource.onmessage = (event) => {
+        const data = event.data;
+
+        // Check for the special 'DONE' signal
+        if (data === "[DONE]") {
+          toast.success("Analysis complete! Redirecting...");
+          eventSource.close();
+          return;
+        }
+        
        
+        try {
+            const finalResult = JSON.parse(data);
+            localStorage.setItem("ai_output", JSON.stringify(finalResult));
+            
+            const pathname = `/result`;
+            const queryParams = new URLSearchParams({ loanAccountNumber });
+            router.push(`${pathname}?${queryParams.toString()}`);
 
-      
-      localStorage.setItem("ai_output", JSON.stringify(response.data));
-      router.push("/result");
+        } catch (error) {
+          
+            setAnalysisLogs(prev => [...prev, data]);
+        }
+      };
 
-      
-      
+      eventSource.onerror = (error) => {
+        console.error("EventSource failed:", error);
+        toast.error("Connection to server lost. Please try again.");
+        eventSource.close();
+        setLoading(false);
+      };
+
     } catch (error) {
-      console.error("Error comparing files:", error);
-      toast.error("Failed to compare PDFs or images. Check console for errors.");
-    } finally {
+      console.error("Error starting file comparison:", error);
+      toast.error("Failed to start analysis. Check console for errors.");
       setLoading(false);
     }
+ 
   };
-  const newalert = ()=>{
-    toast.error("Pls upload both the files for comparison");
-  }
+
+  const newalert = () => {
+    toast.error("Please upload both the files for comparison");
+  };
 
  
-
-  const navItems = [
-   
-   
-   
-  ];
- 
+  const navItems = [];
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-
-   const handleSignOut = async () => {
+  const handleSignOut = async () => {
     try {
       localStorage.removeItem("user_email");
       localStorage.removeItem("user_type");
       localStorage.removeItem("user_name");
-      
 
-      
-      const response = await fetch('/api/auth/signout', {
-        method: 'POST',
-      });
+      const response = await fetch('/api/auth/signout', { method: 'POST' });
 
       if (response.ok) {
-        
         router.push('/signin');
       } else {
-        
-        console.error('Sign-out failed');
+        toast.error('Sign-out failed.');
       }
     } catch (error) {
-      console.error('An error occurred during sign-out:', error);
+      toast.error('An error occurred during sign-out.');
     }
   };
-
-
 
 
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen  text-black">
+      <div className="flex items-center flex-col justify-center min-h-screen text-black">
         <div className="flex items-center gap-4">
           <span className="loading loading-spinner loading-xl text-warning"></span>
           <FileScan className="animate-pulse h-8 w-8 " />
-          <p className="text-3xl font-serif"> <GradientText
-            colors={["#000000", ["#6366F1", "#A855F7", "#EC4899"], "#000000"]}
-            animationSpeed={90}
-            showBorder={false}>
-                Analyzing Results...  
-            </GradientText></p>
+          <p className="text-5xl font-serif">
+            <GradientText
+              colors={["#000000", ["#6366F1", "#A855F7", "#EC4899"], "#000000"]}
+              animationSpeed={90}
+              showBorder={false}>
+              Analysis in progress...
+            </GradientText>
+          </p>
+        </div>
+        
+       
+        <div className="mt-8 p-4 pl-56 text-black font-mono text-xs w-full max-w-2xl h-64 overflow-y-auto ">
+        
+          {/*{analysisLogs.map((log, index) => (
+            <p key={index} className="whitespace-pre-wrap">{` ${log}`}</p>
+          ))}*/}
+          {analysisLogs.length > 0 && (
+    <p className="whitespace-pre-wrap text-indigo-600 text-xl  font-serif">
+      {`${analysisLogs[analysisLogs.length - 1]}`}
+    </p>
+  )}
+
+           
+          
         </div>
       </div>
     );
   }
-  
 
+ 
   return (
     <div>
-      
-        <div className=" shadow-xs">
+       {/* ... Your Navbar and main page content ... */}
+      <div className=" shadow-xs">
             <Navbar className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
        
         <NavBody>
@@ -302,16 +334,11 @@ export default function Dashboard() {
         
       
       <div className="w-full h-full flex items-center justify-center flex-col mt-20">
-        <div> 
-           
-           
-           
-          <span className="text-4xl font-serif pt-16 flex justify-center">
-             For Document <FlipWords words={words} duration={500} className="text-indigo-500" /> Detector
-          </span>
-          <div className="flex justify-center mt-3 text-neutral-500 font-serif underline">
-            Upload an original and a suspected document to check for tampering.
-          </div>
+      </div>
+      <div className="mt-10">
+        <div className="text-center text-black mb-4">
+            <p className="text-2xl font-serif"><strong>Loan Acc No:</strong>{<span className="text-3xl ml-3 font-sans">{loanAccountNumber}</span> || "N/A"}</p>
+            <p className="text-xl font-serif mt-3"><strong>Document Type:</strong>{<span className="text-2xl ml-5 font-bold">{fileType}</span> || "N/A"}</p>
         </div>
       </div>
 
@@ -354,8 +381,19 @@ export default function Dashboard() {
       </div>
       <div className="flex justify-center mt-10">
         {originalFile && suspectedFile ? (
+          
              <div className="flex items-center gap-4 m-7 mb-4 ">
-            <NavbarButton variant="gradient" onClick={handleCheck}>Check for Tampering</NavbarButton>
+            <NavbarButton variant="gradient" onClick={()=>handleCheck(loanAccountNumber)}>Check for Tampering</NavbarButton>
+            <Toaster
+                position="bottom-right"
+                    reverseOrder={false}
+                    toastOptions={{
+                        style: {
+                            background: '#363636',
+                            color: '#fff',
+                        },
+                    }}
+            />
             
           </div>
             
@@ -375,11 +413,7 @@ export default function Dashboard() {
             />
             
           </div>
-               
-          
-        ) 
-        
-        }
+        )}
       </div>
     </div>
   );

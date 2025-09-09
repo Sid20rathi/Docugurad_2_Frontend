@@ -139,9 +139,9 @@ export default function AdminPage() {
      
       let apiUrl = "";
       if (fileType === 'MODT') {
-        apiUrl = 'https://docugurad-backend.onrender.com/api/verify/MODT'; 
+        apiUrl = 'https://docugurad-2-backend-2.onrender.com/files/api/verify/MODT'; 
       } else if (fileType === 'NOI INDEX II') {
-        apiUrl = 'https://docugurad-backend.onrender.com/api/verify/noi_index';
+        apiUrl = 'https://docugurad-2-backend-2.onrender.com/files/api/verify/noi_index';
       } else {
         throw new Error("Invalid document type specified.");
       }

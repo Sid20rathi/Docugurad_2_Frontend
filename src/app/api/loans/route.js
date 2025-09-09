@@ -31,7 +31,8 @@ export async function GET(request) {
         lm.created_at, 
         lm.status,
         lm.modt_approval_status,
-        lm.noi_index2_approval_status 
+        lm.noi_index2_approval_status,
+        lm.title_document_status
       FROM 
         loan_master lm
       JOIN 

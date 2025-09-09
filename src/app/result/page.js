@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect ,useRef} from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter ,useSearchParams} from 'next/navigation';
 import { ShieldCheck, ShieldAlert, ShieldQuestion, FileScan, ArrowLeft, Download, Image as ImageIcon, LogOut } from 'lucide-react';
 
 import {
@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/resizable-navbar"; 
 import GradientText from '@/components/ui/gradient_text';
 import { jsPDF } from 'jspdf';
+import toast, { Toaster } from 'react-hot-toast';
 
 export default function ResultPage() {
   const [isAdmin, setIsAdmin] = useState("");
@@ -28,6 +29,9 @@ export default function ResultPage() {
   const [userName, setUserName] = useState("");
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const profileRef = useRef(null);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const searchParams = useSearchParams();
+  const [loanAccountNumber, setLoanAccountNumber] = useState("");
 
   const handleSignOut = async () => {
     try {
@@ -61,10 +65,12 @@ export default function ResultPage() {
       const storedEmail = localStorage.getItem("user_email");
       const storedIsAdmin = localStorage.getItem("user_type");
       const storedUserName = localStorage.getItem("user_name");
+      const loanAccNum = searchParams.get("loanAccountNumber");
 
       setEmail(storedEmail);
       setIsAdmin(true);
       setUserName(storedUserName || "admin");
+      if (loanAccNum) setLoanAccountNumber(loanAccNum);
  
       const savedResult = localStorage.getItem('ai_output');
       if (savedResult) {
@@ -166,6 +172,46 @@ export default function ResultPage() {
   const verdictDetails = React.useMemo(() => getVerdictDetails(result?.verdict), [result]);
   const imagePairs = React.useMemo(() => getEvidenceImagePairs(), [result]);
 
+  const handleApproval = async (status) => {
+    if (!loanAccountNumber ) {
+        toast.error("Could not find Loan Account Number ");
+        return;
+    }
+    setIsUpdating(true)
+    toast.success("Updating......");
+    const toastId = toast.loading(`Setting status to ${status}...`);
+  
+    try {
+        const response = await fetch('/api/loans/title_document', { 
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                loanAccountNumber: loanAccountNumber,
+                status: status,
+            }),
+        });
+  
+        const responseData = await response.json();
+  
+        if (!response.ok) {
+            throw new Error(responseData.error || 'Failed to update status.');
+        }
+  
+        toast.success(`Document marked as ${status}!`, { id: toastId });
+  
+        setTimeout(() => {
+            router.push('/verification');
+        }, 1500);
+  
+    } catch (error) {
+        toast.error(`Error: ${error.message}`, { id: toastId });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
 
   if (loading) {
     return (
@@ -247,7 +293,7 @@ export default function ResultPage() {
       <main className="text-gray-800 font-sans p-4 sm:p-6 md:p-8">
         <div className="max-w-7xl mx-auto">
           <div className="flex justify-between items-center mb-8 flex-wrap gap-4">
-            <button onClick={() => router.push('/dashboard')} className="flex items-center gap-2 text-gray-600 hover:text-black transition-colors group">
+            <button onClick={() => router.push('/verification')} className="flex items-center gap-2 text-gray-600 hover:text-black transition-colors group">
               <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
               <span>Check Another Document</span>
             </button>
@@ -332,6 +378,29 @@ export default function ResultPage() {
           )}
         </div>
       </main>
+      <div className="flex justify-center mt-10 flex-row">
+        <div>
+          <NavbarButton 
+              variant="primary" 
+              className="bg-red-500 hover:bg-red-600 shadow-2xl mb-5 mr-3 text-white w-full" 
+              onClick={() => handleApproval('rejected')}
+              disabled={isUpdating}
+          >
+              {isUpdating ? 'Updating...' : 'Reject'}
+          </NavbarButton>
+        </div>
+        <div>
+          <NavbarButton 
+              variant="primary" 
+              className="bg-green-500 hover:bg-green-600 shadow-2xl mb-5 ml-3 text-white w-full" 
+              onClick={() => handleApproval('approved')}
+              disabled={isUpdating}
+          >
+              {isUpdating ? 'Updating...' : 'Approve'}
+          </NavbarButton>
+         
+        </div>
+      </div>
     </div>
   );
 }

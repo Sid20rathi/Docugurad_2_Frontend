@@ -23,11 +23,12 @@ export async function GET(request) {
         noi_index2,
         modt_approval_status,
         noi_index2_approval_status,
+        title_document_status,
         created_at
       FROM 
         loan_master
       WHERE
-        (modt_approval_status = 'pending' OR noi_index2_approval_status = 'pending')
+        (modt_approval_status = 'pending' OR noi_index2_approval_status = 'pending' OR title_document_status = 'pending')
       ORDER BY 
         created_at ASC;
     `;

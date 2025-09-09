@@ -71,7 +71,7 @@ export function PendingLoansDashboard() {
 
   const handleVerificationRedirect = (loanId, loanAccountNumber, fileType, filePath) => {
     if (!filePath) {
-      toast.error('File is not uploaded yet. Please upload the file first.');
+      toast.error('File is not uploaded yet. Please  upload the file first.');
       return;
     }
     const pathname = `/verification/dashboard/${loanId}`;
@@ -82,6 +82,24 @@ export function PendingLoansDashboard() {
     });
     router.push(`${pathname}?${queryParams.toString()}`);
   };
+
+
+
+
+  const titleVerification=(loanId, loanAccountNumber,fileType)=>{
+    const pathname = `/dashboard/${loanId}`;
+    const queryParams = new URLSearchParams({
+      loanAccountNumber,
+      fileType,
+    });
+    router.push(`${pathname}?${queryParams.toString()}`);
+
+   
+
+  }
+
+
+
 
   if (loading) {
     return (
@@ -157,6 +175,21 @@ export function PendingLoansDashboard() {
                           variant="primary"
                           className="bg-yellow-100 text-yellow-800 cursor-pointer"
                           onClick={() => handleVerificationRedirect(loan.id, loan.loan_account_number, 'NOI INDEX II', loan.noi_index2)}
+                        >
+                          Pending
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                  {loan.title_document_status === 'pending' &&  (
+                    <div className="flex items-center justify-between gap-2">
+                    <span className="font-semibold text-sm">Title Document :</span>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="primary"
+                          className="bg-yellow-100 text-yellow-800 cursor-pointer"
+                          onClick={() => titleVerification(loan.id, loan.loan_account_number,'Title Document')}
                         >
                           Pending
                         </Button>

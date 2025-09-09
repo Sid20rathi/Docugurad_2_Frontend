@@ -116,8 +116,10 @@ export function CompletedUploadsDashboard() {
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Loan Account No.</th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">MODT Status</th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">NOI Index 2 Status</th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title Status</th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">MODT Document</th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">NOI Index 2 Document</th>
+            
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -129,6 +131,9 @@ export function CompletedUploadsDashboard() {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm">
                   <StatusBadge status={loan.noi_index2_approval_status} />
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm">
+                  <StatusBadge status={loan.title_document_status} />
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {loan.modt ? (

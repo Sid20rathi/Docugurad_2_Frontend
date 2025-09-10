@@ -25,6 +25,7 @@ export default function AdminPage() {
   const [userName, setUserName] = useState("");
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const profileRef = useRef(null);
+  let apiUrl = process.env.NEXT_PUBLIC_Backend_URL;
 
 
   const [originalFile, setOriginalFile] = useState(null);
@@ -137,11 +138,11 @@ export default function AdminPage() {
 
     try {
      
-      let apiUrl = "";
+      
       if (fileType === 'MODT') {
-        apiUrl = 'https://docugurad-2-backend-2.onrender.com/files/api/verify/MODT'; 
+        apiUrl = `${apiUrl}/files/api/verify/MODT`; 
       } else if (fileType === 'NOI INDEX II') {
-        apiUrl = 'https://docugurad-2-backend-2.onrender.com/files/api/verify/noi_index';
+        apiUrl = `${apiUrl}/files/api/verify/noi_index`;
       } else {
         throw new Error("Invalid document type specified.");
       }

@@ -16,6 +16,8 @@ import { AdminPanel } from "@/components/admin/AdminPanel";
 
 
 export default function Dashboard() {
+  let apiUrl = process.env.NEXT_PUBLIC_Backend_URL;
+ 
   const words = ["Forgery", "Tampering", "Cloning", "Manipulation", "Fake", "Copy", "Counterfeit"];
   const [isAdmin, setIsAdmin] = useState("");
   const [email, setEmail] = useState("");
@@ -103,6 +105,7 @@ export default function Dashboard() {
 
   // --- MAJOR CHANGE: Updated handleCheck function ---
   const handleCheck = async (loanAccountNumber) => {
+     
     if (!originalFile || !suspectedFile) return;
 
     const formData = new FormData();
@@ -114,7 +117,7 @@ export default function Dashboard() {
       setAnalysisLogs(["Uploading documents to the server..."]);
 
       // 1. Kick off the analysis and get the task ID
-      const response = await axios.post("https://docugurad-2-backend-2.onrender.com/title_document/api/verify", formData, {
+      const response = await axios.post(`${apiUrl}/title_document/api/verify`, formData, {
         headers: { "Content-Type": "multipart/form-data" }
       });
 
@@ -125,7 +128,7 @@ export default function Dashboard() {
       setAnalysisLogs(prev => [...prev, `Task started with ID: ${task_id}`]);
 
       // 2. Open an EventSource connection to stream logs
-      const eventSource = new EventSource(`https://docugurad-2-backend-2.onrender.com/title_document/api/stream/${task_id}`);
+      const eventSource = new EventSource(`${apiUrl}/title_document/api/stream/${task_id}`);
 
       eventSource.onmessage = (event) => {
         const data = event.data;

@@ -30,7 +30,7 @@ export async function PUT(request) {
       user: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
-      ssl: { "rejectUnauthorized": true }
+      ssl: { rejectUnauthorized: false }
     });
 
     const query = `UPDATE loan_master SET ${columnToUpdate} = ? WHERE id = ?`;

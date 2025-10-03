@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import toast, { Toaster } from 'react-hot-toast';
 import { ArrowLeft, FileScan, LogOut } from 'lucide-react';
 import { FileUpload } from "@/components/ui/file-upload";
+import axios from "axios";
 
 import {
   Navbar,
@@ -26,6 +27,7 @@ export default function AdminPage() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const profileRef = useRef(null);
   let apiUrl = process.env.NEXT_PUBLIC_Backend_URL;
+  let pathURL = process.env.NEXT_PUBLIC_Backend_URL;
 
 
   const [originalFile, setOriginalFile] = useState(null);
@@ -141,8 +143,10 @@ export default function AdminPage() {
       
       if (fileType === 'MODT') {
         apiUrl = `${apiUrl}/files/api/verify/MODT`; 
+        pathURL = `${pathURL}/model_used/api/MODT`; 
       } else if (fileType === 'NOI INDEX II') {
         apiUrl = `${apiUrl}/files/api/verify/noi_index`;
+        pathURL = `${pathURL}/model_used/api/NOI_INDEX`; 
       } else {
         throw new Error("Invalid document type specified.");
       }
@@ -161,6 +165,27 @@ export default function AdminPage() {
         method: 'POST',
         body: formData,
       });
+
+
+      const Pathresponse = await fetch(
+  `${pathURL}?user_email=${email}&user_name=${userName}`,
+  {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+   
+    body: JSON.stringify({}), 
+  }
+);
+
+if (!Pathresponse.ok) {
+  throw new Error(`HTTP error! status: ${Pathresponse.status}`);
+}
+
+
+
+      
 
       toast.dismiss(); 
 

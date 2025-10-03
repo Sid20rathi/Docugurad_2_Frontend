@@ -18,11 +18,11 @@ export async function middleware(request) {
       return NextResponse.redirect(new URL('/signin', request.url));
     }
   }
-  if (!token) {
+  /*if (!token) {
     if (pathname.startsWith('/signup')) {
       return NextResponse.redirect(new URL('/signin', request.url));
     }
-  }
+  }*/
 
 
   try {

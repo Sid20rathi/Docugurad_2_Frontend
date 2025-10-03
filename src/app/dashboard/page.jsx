@@ -320,7 +320,7 @@ export default function Dashboard() {
         
         
         <div className="ml-40 mt-32 font-serif flex flex-col items-center">
-          <div className="pr-3 text-3xl w-80 overflow-hidden">Original Document</div>
+          <div className="pr-3 text-3xl w-80 overflow-hidden">Original Government Document</div>
           <div className="pb-7 mr-9">
             <FileUpload onChange={(files) => handleFileUpload(files, "original")} />
           </div>
@@ -337,7 +337,7 @@ export default function Dashboard() {
 
         
         <div className="mr-40 mt-32 font-serif flex flex-col items-center">
-          <div className="pl-3 text-3xl ">Duplicate Document  </div>
+          <div className="pl-3 text-3xl ">Agent Provided Document  </div>
           <div className="pb-7 mr-9">
             <FileUpload onChange={(files) => handleFileUpload(files, "suspected")} />
           </div>

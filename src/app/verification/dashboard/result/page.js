@@ -1,6 +1,6 @@
 'use client';
 
-import { ShieldCheck, ShieldAlert, ShieldQuestion, FileScan,LogOut, ArrowLeft, Download, Image as ImageIcon } from 'lucide-react';
+import { ShieldCheck, ShieldAlert, ShieldQuestion, FileScan, LogOut, ArrowLeft, Download, Image as ImageIcon } from 'lucide-react';
 import React, { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import toast from 'react-hot-toast';
@@ -359,11 +359,20 @@ export default function ResultPage() {
               </div>
             </div>
           )}
+          
+          {/* Document Display Section - Now shows for ALL verdict types */}
           {originalDocUrl && suspectedDocUrl && (
             <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-lg mt-12">
               <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">
-                Manual Document Verification
+                Document Comparison
               </h2>
+              {verdictDetails.text === 'Document Appears Authentic' && (
+                <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg text-center">
+                  <p className="text-green-700 font-medium">
+                    ✓ Both documents match perfectly. No discrepancies found.
+                  </p>
+                </div>
+              )}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div>
                   <h3 className="text-2xl font-semibold text-center mb-4">Original Document</h3>
@@ -374,7 +383,7 @@ export default function ResultPage() {
                         className="w-full h-full" 
                         title="Original Document"/>
                     ) : (
-                      <img src={originalDocUrl} alt="Original Document" className="w-full h-full "/>
+                      <img src={originalDocUrl} alt="Original Document" className="w-full h-full object-contain"/>
                     )}
                   </div>
                 </div>
@@ -387,7 +396,7 @@ export default function ResultPage() {
                         className="w-full h-full" 
                         title="Suspected Document"/>
                     ) : (
-                      <img src={suspectedDocUrl} alt="Suspected Document" className="w-full h-full "/>
+                      <img src={suspectedDocUrl} alt="Suspected Document" className="w-full h-full object-contain"/>
                     )}
                   </div>
                 </div>

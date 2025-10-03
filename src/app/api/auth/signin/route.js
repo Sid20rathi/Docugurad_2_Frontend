@@ -15,20 +15,23 @@ export async function POST(request) {
   if (!email || !password) {
     return NextResponse.json({ message: 'Email and password are required.' }, { status: 400 });
   }
-
-  // Ensure you have a mechanism to handle connection pooling in a real app
-  const connection = await mysql.createConnection({
+   
+    const connection = await mysql.createConnection({
     host: process.env.DB_HOST,
     port: process.env.DB_PORT,
     user: process.env.DB_USERNAME,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_DATABASE,
-    ssl: { rejectUnauthorized: true }
+    ssl: { rejectUnauthorized: false }
   });
+
+ 
 
   try {
     const query = 'SELECT * FROM users WHERE email_id = ?';
+    
     const [rows] = await connection.execute(query, [email]);
+   
 
     if (rows.length === 0) {
       await connection.end();
@@ -36,14 +39,16 @@ export async function POST(request) {
     }
 
     const user = rows[0];
+    
     const isPasswordValid = await bcrypt.compare(password, user.password_hash);
+   
 
     if (!isPasswordValid) {
       await connection.end();
       return NextResponse.json({ message: 'Invalid email or password.' }, { status: 401 });
     }
 
-    // --- UPDATED TOKEN PAYLOAD ---
+   
     const tokenPayload = {
       userId: user.id,
       email: user.email_id,
@@ -64,8 +69,7 @@ export async function POST(request) {
       path: '/',           
     });
 
-    // --- UPDATED RESPONSE ---
-    // This now includes the user's name to be used by the frontend
+    
     const response = NextResponse.json({ 
         message: 'Sign-in successful!',
         email: user.email_id,

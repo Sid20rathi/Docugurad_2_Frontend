@@ -27,7 +27,7 @@ export default function Home() {
    
    
     {
-      name: "Contact",
+      name: "Support",
       link: "#contact",
     },
   ];
@@ -215,10 +215,7 @@ export default function Home() {
            <h1 className="text-8xl font-extrabold tracking-tighter ">
                <SparklesText className={"text-8xl font-extrabold tracking-tighter "}><AuroraText>DocuGuard</AuroraText></SparklesText>
            </h1>
-           <div className="text-neutral-600 font-serif text-md pt-2">
-             (Because Every Signature, Stamp, and Pixel Matters.)
-
-           </div>
+         
            <div className="flex flex-row mt-14">
             <div>
               
@@ -258,43 +255,17 @@ export default function Home() {
 
         </div>
 
-        <div>
-            <div className="relative w-full overflow-clip">
-      <Timeline data={data} />
-    </div>
-        </div>
+   
 
         <div >
-          <div className ="m-7 text-5xl font-bold flex justify-center">
-            🔍 Suspicious about a <span>     </span><ColourfulText text=" Document" />?
-
-          </div>
-          <div className="flex flex-col justify-center">
-            <div className="flex flex-row items-center justify-center" >
-            <div className="mt-4 text-2xl font-serif flex justify-center  text-neutral-500">
-            Sign in and let <span>{" "}</span>
-          </div>
-          <div className="mt-4 text-4xl font-serif flex justify-center  ml-3">
-             <PointerHighlight>
-        <span><AuroraText>DocuGuard</AuroraText></span>
-      </PointerHighlight>
-              
-          </div>
-          <div className="mt-4 text-2xl font-serif flex justify-center  text-neutral-500 ml-3">
-                reveal the truth.
-          </div>
-          </div>
-          <div className ="flex justify-center mt-10">
-               <ShimmerButton className="shadow-2xl" onClick={() => router.push('/signin')}>
-      <span className="whitespace-pre-wrap text-center text-md font-medium leading-none tracking-tight text-white dark:from-white dark:to-slate-900/10  ">
-        Sign Up
-      </span>
-    </ShimmerButton>
-          </div>
-          </div>
+        
+         
           <div className="inset-shadow-sm m-10">
             <div id="contact" className="flex justify-center text-lg font-light pt-5">
-               sales@genintel.in
+              Powered by GenIntel Technologies
+            </div>
+             <div id="contact" className="flex justify-center text-lg font-light ">
+              info@genintel.in
             </div>
             
 

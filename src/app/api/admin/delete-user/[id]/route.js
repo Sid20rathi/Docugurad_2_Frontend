@@ -20,7 +20,7 @@ export async function DELETE(request, { params }) {
       user: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
-      ssl: { "rejectUnauthorized": true }
+      ssl: { rejectUnauthorized: false }
     });
 
     await connection.beginTransaction();

@@ -333,6 +333,8 @@ export default function Managerpages() {
                    
                     <div className="flex flex-col gap-1"><span className="text-gray-500">MODT Approval</span>{getStatusBadge(selectedLoan.modt_approval_status)}</div>
                     <div className="flex flex-col gap-1"><span className="text-gray-500">NOI Index2 Approval</span>{getStatusBadge(selectedLoan.noi_index2_approval_status)}</div>
+                    <div className="flex flex-col gap-1"><span className="text-gray-500">Title Doc Approval</span>{getStatusBadge(selectedLoan.title_document_status)}</div>
+                  
                   </div>
                 </div>
                 <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-900/50">

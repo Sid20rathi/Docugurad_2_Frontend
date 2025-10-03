@@ -15,7 +15,7 @@ export async function GET(request) {
       user: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
-      ssl: { "rejectUnauthorized": true }
+      ssl: { rejectUnauthorized: false }
     });
 
     // CHANGED: The SQL query now selects all users instead of filtering by email.

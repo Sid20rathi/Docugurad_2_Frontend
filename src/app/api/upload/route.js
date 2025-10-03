@@ -28,26 +28,26 @@ export async function POST(request) {
 
     
     const { url } = await put(filename, buffer, {
-      access: 'public', // 👈 makes file accessible via URL
+      access: 'public', 
     });
 
-    const fileUrl = url; // Use Blob URL instead of local path
+    const fileUrl = url; 
 
-    // --- 4. Database Update ---
+    
     connection = await mysql.createConnection({
       host: process.env.DB_HOST,
       port: process.env.DB_PORT,
       user: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
-      ssl: { rejectUnauthorized: true }
+      ssl: { rejectUnauthorized: false }
     });
 
-    // Update the column for the uploaded file
+   
     const updateQuery = `UPDATE loan_master SET \`${documentType}\` = ? WHERE id = ?`;
     await connection.execute(updateQuery, [fileUrl, loanId]);
 
-    // --- NEW LOGIC: Check if all documents are present and update status ---
+    
     const [rows] = await connection.execute(
       'SELECT modt, noi_data_entry_page, noi_receipt, noi_index2 FROM loan_master WHERE id = ?',
       [loanId]
@@ -55,7 +55,7 @@ export async function POST(request) {
 
     if (rows.length > 0) {
       const loan = rows[0];
-      // Check if all documents exist
+     
       if (loan.modt && loan.noi_data_entry_page && loan.noi_receipt && loan.noi_index2) {
         await connection.execute(
           "UPDATE loan_master SET status = 'upload completed' WHERE id = ?",
